@@ -1,53 +1,64 @@
-import z, { ZodError } from 'zod'
+import { ZodError } from "zod";
+import mongoose from "mongoose";
+import { AppError } from "../errors/app-error.js";
 
-import { AppError } from '../errors/app-error.js'
-
-// eslint-disable-next-line no-unused-vars
-export const errorHandler = (err, req, res, next) => {
-  let statusCode = err.statusCode || 500
-  let message = err.message || 'Internal Server Error'
-  let errors = err.errors || null
-
-  if (err instanceof ZodError) {
-    statusCode = 422
-    message = 'Validation error'
-    errors = z.flattenError(err).fieldErrors
-  } else if (err.code === 11000) {
-    statusCode = 409
-    const fields = err.keyValue ? Object.keys(err.keyValue) : []
-    const fieldName = fields.join(', ') || 'field'
-    message = `Duplicate value entered for ${fieldName}`
-    errors = err.keyValue
-      ? Object.fromEntries(
-          Object.entries(err.keyValue).map(([field, value]) => [
-            field,
-            [`${field} '${value}' already exists`],
-          ]),
-        )
-      : null
-  } else if (err.type === 'entity.parse.failed') {
-    statusCode = 400
-    message = 'Malformed JSON payload'
-  }
-
-  const isProduction = process.env.NODE_ENV === 'production'
-
-  return res.status(statusCode).json({
-    meta: {
-      status: statusCode,
-      message,
-    },
-    ...(errors && { errors }),
-    ...(!isProduction && statusCode === 500 && { stack: err.stack }),
-  })
-}
-
+// 404 untuk route yang tidak ditemukan
 export const notFoundHandler = (req, res, next) => {
-  if (req.originalUrl.startsWith('/api') || req.xhr || req.accepts('json')) {
-    return next(new AppError(`Resource not found: ${req.method} ${req.originalUrl}`, 404))
+  next(new AppError(`Route ${req.method} ${req.originalUrl} tidak ditemukan`, 404));
+};
+
+// Error handler terpusat, respons selalu JSON
+export const errorHandler = (err, req, res, next) => {
+  let statusCode = err.statusCode || 500;
+  let message = err.message || "Terjadi kesalahan pada server";
+  let errors;
+
+  // 1. Validasi zod -> 400
+  if (err instanceof ZodError) {
+    statusCode = 400;
+    message = "Validasi data gagal";
+    errors = err.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+  }
+  // Validasi Mongoose -> 400
+  else if (err instanceof mongoose.Error.ValidationError) {
+    statusCode = 400;
+    message = "Validasi data gagal";
+    errors = Object.values(err.errors).map((e) => ({
+      field: e.path,
+      message: e.message,
+    }));
+  }
+  // ID tidak valid -> 400
+  else if (err instanceof mongoose.Error.CastError) {
+    statusCode = 400;
+    message = `Nilai '${err.value}' tidak valid untuk field '${err.path}'`;
+  }
+  // Data duplikat -> 409
+  else if (err.code === 11000) {
+    statusCode = 409;
+    const field = Object.keys(err.keyValue || {})[0];
+    message = `Data dengan ${field} '${err.keyValue?.[field]}' sudah ada`;
+  }
+  // 2. Tidak ditemukan (404) dan error manual lain
+  else if (err instanceof AppError) {
+    errors = err.errors;
+  }
+  // 3. Kesalahan server -> 500
+  else {
+    statusCode = 500;
+    message = "Terjadi kesalahan pada server";
+    console.error(err);
   }
 
-  return res.status(404).render('pages/404', {
-    title: '404 - Page Not Found',
-  })
-}
+  res.status(statusCode).json({
+    success: false,
+    status: statusCode,
+    message,
+    ...(errors && { errors }),
+  });
+};
+
+export default errorHandler;

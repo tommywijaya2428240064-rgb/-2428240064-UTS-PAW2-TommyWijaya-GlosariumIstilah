@@ -1,0 +1,66 @@
+{
+  "info": {
+    "_postman_id": "939fa55a-0ee7-4e2c-9fcc-ed8ed71fa3fe",
+    "name": "UTS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58519376",
+    "_collection_link": "https://go.postman.co/collection/58519376-939fa55a-0ee7-4e2c-9fcc-ed8ed71fa3fe?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Tambah",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Tampil_Data",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Detail",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Hapus",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    }
+  ]
+}

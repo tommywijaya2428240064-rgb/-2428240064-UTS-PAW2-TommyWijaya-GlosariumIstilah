@@ -1,29 +1,22 @@
-import path from 'node:path'
+import express from "express";
 
-import compression from 'compression'
-import cors from 'cors'
-import express from 'express'
+import apiRoutes from "./routes/api.routes.js";
+import requestLogger from "./middleware/requestLogger.js";
+import { notFoundHandler, errorHandler } from "./middleware/error.middleware.js";
 
-import configureView from './config/view.js'
-import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
-import apiRoutes from './routes/api.routes.js'
-import webRoutes from './routes/web.routes.js'
+const app = express();
 
-const app = express()
+app.use(requestLogger);
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-configureView(app)
+app.get("/", (req, res) => {
+  res.status(200).json({ success: true, message: "API Glosarium Istilah berjalan" });
+});
 
-app.use(cors())
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(compression())
+app.use("/api", apiRoutes);
 
-app.use('/storage/public', express.static(path.resolve(process.cwd(), 'storage/public')))
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-app.use('/', webRoutes)
-app.use('/api', apiRoutes)
-
-app.use(notFoundHandler)
-app.use(errorHandler)
-
-export default app
+export default app;

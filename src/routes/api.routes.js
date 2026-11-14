@@ -1,16 +1,20 @@
-import express from 'express'
-import FakultasController from '../controllers/fakultas.controller.js'
-import { logMiddleware } from '../middleware/log.middleware.js'
+import { Router } from "express";
+import {
+  createGlosarium,
+  getAllGlosarium,
+  getGlosariumById,
+  updateGlosarium,
+  deleteGlosarium,
+} from "../controllers/Glosarium.controller.js";
 
-const router = express.Router()
+const router = Router();
 
-router.use(logMiddleware) 
+router.route("/glosarium").post(createGlosarium).get(getAllGlosarium);
 
-router.get('/Glosarium', GlosariumController.index)
-router.get('/Glosarium/:id', GlosariumController.show)
-router.post('/Glosarium', GlosariumController.store)
-router.put('/Glosarium/:id', GlosariumController.update)
-router.patch('/Glosarium/:id', GlosariumController.update)
-router.delete('/Glosarium/:id', GlosariumController.delete)
+router
+  .route("/glosarium/:id")
+  .get(getGlosariumById)
+  .put(updateGlosarium)
+  .delete(deleteGlosarium);
 
-export default router
+export default router;

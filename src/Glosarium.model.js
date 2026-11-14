@@ -1,16 +1,7 @@
 import mongoose from "mongoose";
+import glosariumSchema from "./schemas/Glosarium.schema.js";
 
-const GlosariumSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        require: true,
-        unique: true
-    },
-},
-    {
-        timestamps: true,
-    },
-)
+const Glosarium =
+  mongoose.models.Glosarium || mongoose.model("Glosarium", glosariumSchema);
 
-const fakultasModel = mongoose.model('Glosarium',GlosariumSchema)
-export default GlosariumModel
+export default Glosarium;
